@@ -16,14 +16,14 @@ function main() {
         
         //string = JSON.stringify(tree, ['type', 'value', 'from', 'to'],  4);
         string = JSON.stringify(tree, ['key', 'name', 'message',
-             'value', 'arity', 'first', 'second', 'third', 'fourth'], 4);
+				       'value', 'arity', 'first', 'second', 'third', 'fourth'], 4);
     } catch (e) {
         string = JSON.stringify(e, ['name', 'message', 'from', 'to', 'key',
-                'value', 'arity', 'first', 'second', 'third', 'fourth'], 4);
+				    'value', 'arity', 'first', 'second', 'third', 'fourth'], 4);
     }
     OUTPUT.innerHTML = string.replace(/&/g, '&amp;').replace(/[<]/g, '&lt;');
 };
 
 window.onload = function() {
-  PARSE.onclick = main;
+    PARSE.onclick = main;
 }
