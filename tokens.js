@@ -12,6 +12,7 @@
 // Comments are ignored.
 
 RegExp.prototype.bexec = function(str) {
+    //console.log("Testing _" +str );
   var i = this.lastIndex;
   var m = this.exec(str);
   if (m && m.index == i) return m;
@@ -26,14 +27,14 @@ String.prototype.tokens = function () {
     var m;                      // Matching
     var result = [];            // An array to hold the results.
 
-    var WHITES              = /\s+/g;
-    var ID                  = /[a-zA-Z]/g;
-    var NUM                 = /(\d+)|(\d*.\d*)/g;
-    var STRING              = /\"((\\")|([^\"]))*\"/g;//"
-    var ONELINECOMMENT      = /\/\/.*\n/g;
-    var MULTIPLELINECOMMENT = /\/\*(.|\n)*\*\//g;
-    var TWOCHAROPERATORS    = /(\+\+)|(\-\-)|(&&)|(\|\|)|(==)|(<=)|(>=)/g;
-    var ONECHAROPERATORS    = /[-+*\/=)(&;:%><\[\]]/g;//"
+    var WHITES              = /^\s+/;
+    var ID                  = /^[a-zA-Z][a-zA-Z_]*/;
+    var NUM                 = /^(\d+)|(\d*\.\d*)/;
+    var STRING              = /^\"((\\")|([^\"]))*\"/;//"
+    var ONELINECOMMENT      = /^\/\/.*\n/;
+    var MULTIPLELINECOMMENT = /^\/\*(.|\n)*\*\//;
+    var TWOCHAROPERATORS    = /^(\+\+)|(\-\-)|(&&)|(\|\|)|(==)|(<=)|(>=)/;
+    var ONECHAROPERATORS    = /^[-+.*\/\\=)|(&;:%><\[\]]/;
     
     // Make a token object.
     var make = function (type, value) {
@@ -56,22 +57,23 @@ String.prototype.tokens = function () {
         ONELINECOMMENT.lastIndex = ONECHAROPERATORS.lastIndex =
         MULTIPLELINECOMMENT.lastIndex = TWOCHAROPERATORS.lastIndex = i;
         from = i;
-	alert(self);
+	//console.log("\nTesting -------->\n"+self);
         // Ignore whitespace.
-        if (m = WHITES.bexec(this)) {
+        if (m = WHITES.bexec(self)) {
             str = m[0];
             self = self.substr( m.index + str.length );
-	    console.log("Match White");
+	    //console.log("Match White" );
         // name.
-        } else if (m = ID.bexec(this)) {
+        } else if (m = ID.bexec(self)) {
             str = m[0];
             self = self.substr( m.index + str.length );
             result.push(make('name', str));
-	    console.log("Match ID");
+	    //console.log("Match ID");
 
         // number.
-        } else if (m = NUM.bexec(this)) {
-            str = m[0];
+        } else if (m = NUM.bexec(self)) {
+            //console.log("Match NUM");
+	    str = m[0];
             self = self.substr( m.index + str.length );
 
             n = +str;
@@ -80,33 +82,38 @@ String.prototype.tokens = function () {
             } else {
                 make('number', str).error("Bad number");
             }
-	    console.log("Match NUM");
+	    
         // string
-        } else if (m = STRING.bexec(this)) {
+        } else if (m = STRING.bexec(self)) {
             str = m[0];
             self = self.substr( m.index + str.length );
             str = str.replace(/^["']/,'');//"
             str = str.replace(/["']$/,'');//"
             result.push(make('string', str));
-	    console.log("Match STRING");				
+	    //console.log("Match STRING");				
         // comment.
-        } else if ((m = ONELINECOMMENT.bexec(this))  || 
-                   (m = MULTIPLELINECOMMENT.bexec(this))) {
+        } else if ((m = ONELINECOMMENT.bexec(self))  || 
+                   (m = MULTIPLELINECOMMENT.bexec(self))) {
             str = m[0];
             self = self.substr( m.index + str.length );
-	    console.log("Match ONELINECOMMENT");
+	    //console.log("Match COMMENT");
         // two char operator
-        } else if (m = TWOCHAROPERATORS.bexec(this)) {
+        } else if (m = TWOCHAROPERATORS.bexec(self)) {
             str = m[0];
             self = self.substr( m.index + str.length );
             result.push(make('operator', str));
+	    //console.log("Match TWOCHAR "+str);
         // single-character operator
-        } else if (m = ONECHAROPERATORS.bexec(this)){
-            result.push(make('operator', this.substr(i,1)));
-            self = self.substr( m.index + str.length );
+        } else if (m = ONECHAROPERATORS.bexec(self)){
+	    result.push(make('operator', self.substring( 0, 1)));
+            //console.log("Match ONECHAR "+self.substring( 0, 1));
+	    self = self.substr( m.index + 1 );
+	    
         } else {
-          throw "Syntax error near '"+this.substr(i)+"'";
+	  //console.log("No Match");
+          throw "Syntax error near '"+self.substr(i)+"'";
         }
+	  ////console.log("Fin");
     }
 
     return result;
